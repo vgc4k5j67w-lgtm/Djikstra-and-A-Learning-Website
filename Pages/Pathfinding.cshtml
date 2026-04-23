@@ -1,0 +1,882 @@
+@page
+@model PathfindingEdu.Pages.PathfindingModel
+@{
+    ViewData["Title"] = "Pathfinding Visualizer";
+}
+
+<style>
+    .pathfinding-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .controls {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 15px;
+    }
+
+    .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .control-group label {
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .control-group input,
+    .control-group select {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .control-group input:focus,
+    .control-group select:focus {
+        outline: none;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+    }
+
+    .buttons-group {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+    }
+
+    .buttons-group button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-run {
+        background: #28a745;
+        color: white;
+        flex: 1;
+    }
+
+    .btn-run:hover:not(:disabled) {
+        background: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-run:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    .btn-clear {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-clear:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+    }
+
+    .canvas-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        background: white;
+        padding: 10px;
+        overflow: auto;
+        max-height: 600px;
+    }
+
+    #pathfindingCanvas {
+        border: 1px solid #ccc;
+        background: white;
+        cursor: crosshair;
+    }
+
+    .legend {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+        border: 1px solid #999;
+    }
+
+    .results {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 15px;
+        min-height: 80px;
+    }
+
+    .result-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .result-label {
+        font-weight: 600;
+        color: #666;
+        font-size: 13px;
+    }
+
+    .result-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .error {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        border: 1px solid #f5c6cb;
+        display: none;
+    }
+
+    .info-text {
+        color: #666;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+    .stats-header {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .grid-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .mode-toggle {
+        display: flex;
+        gap: 10px;
+    }
+
+    .mode-btn {
+        padding: 8px 16px;
+        border: 2px solid #ddd;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+        transition: all 0.2s ease;
+    }
+
+    .mode-btn.active {
+        border-color: #0d6efd;
+        background: #0d6efd;
+        color: white;
+    }
+
+    .mode-btn:hover:not(.active) {
+        border-color: #0d6efd;
+        color: #0d6efd;
+    }
+</style>
+
+<style>
+    @@media (max-width: 1200px) {
+        .controls {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .results {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .controls {
+            grid-template-columns: 1fr;
+        }
+
+        .results {
+            grid-template-columns: 1fr;
+        }
+
+        .buttons-group {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="pathfinding-container">
+    <h1 style="margin-bottom: 10px;">🗺️ Pathfinding Visualizer</h1>
+    <p style="color: #666; margin-bottom: 20px;">Visualize A* and Dijkstra's algorithms in action. Click to place obstacles, set start/end points.</p>
+
+    <div class="error" id="errorMessage"></div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="gridWidth">Grid Width</label>
+            <input type="number" id="gridWidth" value="30" min="5" max="100">
+        </div>
+
+        <div class="control-group">
+            <label for="gridHeight">Grid Height</label>
+            <input type="number" id="gridHeight" value="20" min="5" max="100">
+        </div>
+
+        <div class="control-group">
+            <label for="algorithm">Algorithm</label>
+            <select id="algorithm">
+                <option value="astar">A* (A-Star)</option>
+                <option value="dijkstra">Dijkstra's</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="speed">Animation Speed</label>
+            <select id="speed">
+                <option value="0">Instant</option>
+                <option value="1">Slow</option>
+                <option value="5" selected>Normal</option>
+                <option value="20">Fast</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="grid-controls">
+        <div class="mode-toggle">
+            <button class="mode-btn active" data-mode="draw-obstacle" title="Draw obstacles">🚫 Obstacles</button>
+            <button class="mode-btn" data-mode="draw-start" title="Set start point">🟢 Start</button>
+            <button class="mode-btn" data-mode="draw-end" title="Set end point">🔴 End</button>
+        </div>
+
+        <div class="buttons-group" style="margin-left: auto;">
+            <button class="btn-run" id="runBtn">▶️ Run Pathfinding</button>
+            <button class="btn-clear" id="clearBtn">🗑️ Clear Grid</button>
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: white; border: 2px solid #333;"></div>
+            <span>Empty Cell</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #333;"></div>
+            <span>Obstacle</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #28a745;"></div>
+            <span>Start Point</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #dc3545;"></div>
+            <span>End Point</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #87ceeb; opacity: 0.7;"></div>
+            <span>Visited Cells</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ffd700;"></div>
+            <span>Final Path</span>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="pathfindingCanvas"></canvas>
+    </div>
+
+    <div class="results" id="results" style="display: none;">
+        <div class="result-item">
+            <div class="result-label">Path Found</div>
+            <div class="result-value" id="pathFound">—</div>
+        </div>
+        <div class="result-item">
+            <div class="result-label">Path Length</div>
+            <div class="result-value" id="pathLength">—</div>
+        </div>
+        <div class="result-item">
+            <div class="result-label">Cells Visited</div>
+            <div class="result-value" id="visitedCount">—</div>
+        </div>
+        <div class="result-item">
+            <div class="result-label">Execution Time</div>
+            <div class="result-value" id="executionTime">—</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('pathfindingCanvas');
+    const ctx = canvas.getContext('2d');
+    const gridWidthInput = document.getElementById('gridWidth');
+    const gridHeightInput = document.getElementById('gridHeight');
+    const algorithmSelect = document.getElementById('algorithm');
+    const speedSelect = document.getElementById('speed');
+    const runBtn = document.getElementById('runBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const errorMessage = document.getElementById('errorMessage');
+    const resultsDiv = document.getElementById('results');
+
+    const CELL_SIZE = 20;
+    const COLORS = {
+        empty: '#ffffff',
+        obstacle: '#333333',
+        start: '#28a745',
+        end: '#dc3545',
+        visited: '#87ceeb',
+        path: '#ffd700',
+        border: '#cccccc',
+        visiting: '#ff6b6b'  // Color for currently being visited
+    };
+
+    let grid = [];
+    let startPoint = null;
+    let endPoint = null;
+    let obstacles = [];
+    let currentMode = 'draw-obstacle';
+    let isRunning = false;
+
+    // Cell states
+    const CELL_EMPTY = 0;
+    const CELL_OBSTACLE = 1;
+    const CELL_START = 2;
+    const CELL_END = 3;
+    const CELL_VISITED = 4;
+    const CELL_PATH = 5;
+    const CELL_VISITING = 6;
+
+    function initializeGrid() {
+        const width = parseInt(gridWidthInput.value);
+        const height = parseInt(gridHeightInput.value);
+        
+        grid = Array(height).fill(null).map(() => Array(width).fill(CELL_EMPTY));
+        
+        // Set default start point (top-left)
+        startPoint = { x: Math.floor(width * 0.1), y: Math.floor(height / 2) };
+        grid[startPoint.y][startPoint.x] = CELL_START;
+        
+        // Set default end point (right side)
+        endPoint = { x: Math.floor(width * 0.9), y: Math.floor(height / 2) };
+        grid[endPoint.y][endPoint.x] = CELL_END;
+        
+        obstacles = [];
+        
+        canvas.width = width * CELL_SIZE;
+        canvas.height = height * CELL_SIZE;
+        
+        redraw();
+    }
+
+    function getCellAtMouse(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) / CELL_SIZE);
+        const y = Math.floor((e.clientY - rect.top) / CELL_SIZE);
+        
+        const width = parseInt(gridWidthInput.value);
+        const height = parseInt(gridHeightInput.value);
+        
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            return { x, y };
+        }
+        return null;
+    }
+
+    canvas.addEventListener('click', (e) => {
+        if (isRunning) return;
+        
+        const cell = getCellAtMouse(e);
+        if (!cell) return;
+
+        const { x, y } = cell;
+
+        switch (currentMode) {
+            case 'draw-obstacle':
+                if ((startPoint?.x === x && startPoint?.y === y) ||
+                    (endPoint?.x === x && endPoint?.y === y)) {
+                    return;
+                }
+                if (grid[y][x] === CELL_OBSTACLE) {
+                    grid[y][x] = CELL_EMPTY;
+                    obstacles = obstacles.filter(obs => !(obs.x === x && obs.y === y));
+                } else {
+                    grid[y][x] = CELL_OBSTACLE;
+                    obstacles.push({ x, y });
+                }
+                break;
+
+            case 'draw-start':
+                if (endPoint?.x === x && endPoint?.y === y) return;
+                if (grid[y][x] === CELL_OBSTACLE) return;
+                
+                if (startPoint) {
+                    grid[startPoint.y][startPoint.x] = CELL_EMPTY;
+                }
+                startPoint = { x, y };
+                grid[y][x] = CELL_START;
+                break;
+
+            case 'draw-end':
+                if (startPoint?.x === x && startPoint?.y === y) return;
+                if (grid[y][x] === CELL_OBSTACLE) return;
+                
+                if (endPoint) {
+                    grid[endPoint.y][endPoint.x] = CELL_EMPTY;
+                }
+                endPoint = { x, y };
+                grid[y][x] = CELL_END;
+                break;
+        }
+
+        redraw();
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (isRunning) return;
+        
+        const cell = getCellAtMouse(e);
+        canvas.style.cursor = cell ? 'pointer' : 'default';
+    });
+
+    function getColorForCell(cellType) {
+        switch (cellType) {
+            case CELL_EMPTY: return COLORS.empty;
+            case CELL_OBSTACLE: return COLORS.obstacle;
+            case CELL_START: return COLORS.start;
+            case CELL_END: return COLORS.end;
+            case CELL_VISITED: return COLORS.visited;
+            case CELL_PATH: return COLORS.path;
+            case CELL_VISITING: return COLORS.visiting;
+            default: return COLORS.empty;
+        }
+    }
+
+    function redraw() {
+        const width = grid[0]?.length || 0;
+        const height = grid.length;
+
+        ctx.fillStyle = COLORS.empty;
+        ctx.fillRect(0, 0, width * CELL_SIZE, height * CELL_SIZE);
+
+        // Draw grid lines
+        ctx.strokeStyle = COLORS.border;
+        ctx.lineWidth = 0.5;
+        for (let x = 0; x <= width; x++) {
+            ctx.beginPath();
+            ctx.moveTo(x * CELL_SIZE, 0);
+            ctx.lineTo(x * CELL_SIZE, height * CELL_SIZE);
+            ctx.stroke();
+        }
+        for (let y = 0; y <= height; y++) {
+            ctx.beginPath();
+            ctx.moveTo(0, y * CELL_SIZE);
+            ctx.lineTo(width * CELL_SIZE, y * CELL_SIZE);
+            ctx.stroke();
+        }
+
+        // Draw cells
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const cellType = grid[y][x];
+                ctx.fillStyle = getColorForCell(cellType);
+                ctx.fillRect(x * CELL_SIZE + 1, y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+            }
+        }
+    }
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        // Don't auto-hide error messages - user should dismiss them
+        console.log('Error:', message);
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // A* Algorithm Implementation
+    async function runAStar() {
+        const width = grid[0].length;
+        const height = grid.length;
+        
+        // Priority queue using array (simple implementation)
+        const openSet = [];
+        const closedSet = new Set();
+        const cameFrom = new Map();
+        const gScore = new Map();
+        const fScore = new Map();
+        
+        const startKey = `${startPoint.x},${startPoint.y}`;
+        const endKey = `${endPoint.x},${endPoint.y}`;
+        
+        openSet.push({ 
+            x: startPoint.x, 
+            y: startPoint.y, 
+            f: heuristic(startPoint, endPoint) 
+        });
+        gScore.set(startKey, 0);
+        fScore.set(startKey, heuristic(startPoint, endPoint));
+        
+        let visitedCount = 0;
+        let found = false;
+        const startTime = performance.now();
+        
+        while (openSet.length > 0) {
+            // Sort by f score and get first
+            openSet.sort((a, b) => a.f - b.f);
+            const current = openSet.shift();
+            const currentKey = `${current.x},${current.y}`;
+            
+            // Check if reached end
+            if (current.x === endPoint.x && current.y === endPoint.y) {
+                found = true;
+                break;
+            }
+            
+            closedSet.add(currentKey);
+            
+            // Visualize current cell as visiting
+            if (grid[current.y][current.x] !== CELL_START && grid[current.y][current.x] !== CELL_END) {
+                grid[current.y][current.x] = CELL_VISITING;
+                redraw();
+                const speed = parseInt(speedSelect.value);
+                if (speed > 0) await sleep(Math.max(1, 60 - speed * 3));
+            }
+            visitedCount++;
+            
+            // Get neighbors (8-directional)
+            const neighbors = getNeighbors(current.x, current.y, width, height);
+            
+            for (const neighbor of neighbors) {
+                const neighborKey = `${neighbor.x},${neighbor.y}`;
+                
+                if (closedSet.has(neighborKey)) continue;
+                
+                const tentativeG = gScore.get(currentKey) + distance(current, neighbor);
+                
+                if (!gScore.has(neighborKey) || tentativeG < gScore.get(neighborKey)) {
+                    cameFrom.set(neighborKey, currentKey);
+                    gScore.set(neighborKey, tentativeG);
+                    fScore.set(neighborKey, tentativeG + heuristic(neighbor, endPoint));
+                    
+                    // Add to open set if not there
+                    const inOpen = openSet.find(n => n.x === neighbor.x && n.y === neighbor.y);
+                    if (!inOpen) {
+                        openSet.push({ 
+                            x: neighbor.x, 
+                            y: neighbor.y, 
+                            f: fScore.get(neighborKey) 
+                        });
+                    }
+                }
+            }
+            
+            // Mark current as visited after exploring neighbors
+            if (grid[current.y][current.x] !== CELL_START && grid[current.y][current.x] !== CELL_END) {
+                grid[current.y][current.x] = CELL_VISITED;
+                redraw();
+            }
+        }
+        
+        const endTime = performance.now();
+        
+        if (found) {
+            // Reconstruct and visualize path
+            await reconstructPath(cameFrom, endKey);
+            return { found: true, pathLength: 0, visitedCount, executionTime: endTime - startTime };
+        }
+        
+        return { found: false, pathLength: 0, visitedCount, executionTime: endTime - startTime };
+    }
+
+    // Dijkstra's Algorithm Implementation
+    async function runDijkstra() {
+        const width = grid[0].length;
+        const height = grid.length;
+        
+        const distances = new Map();
+        const previous = new Map();
+        const visited = new Set();
+        const unvisited = new Set();
+        
+        const startKey = `${startPoint.x},${startPoint.y}`;
+        const endKey = `${endPoint.x},${endPoint.y}`;
+        
+        // Initialize
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                if (grid[y][x] !== CELL_OBSTACLE) {
+                    const key = `${x},${y}`;
+                    distances.set(key, Infinity);
+                    unvisited.add(key);
+                }
+            }
+        }
+        
+        distances.set(startKey, 0);
+        
+        let visitedCount = 0;
+        let found = false;
+        const startTime = performance.now();
+        
+        while (unvisited.size > 0) {
+            // Find minimum distance node in unvisited
+            let minNode = null;
+            let minDist = Infinity;
+            
+            for (const key of unvisited) {
+                if (distances.get(key) < minDist) {
+                    minDist = distances.get(key);
+                    minNode = key;
+                }
+            }
+            
+            if (minNode === null || minNode === endKey) {
+                if (minNode === endKey) found = true;
+                break;
+            }
+            
+            unvisited.delete(minNode);
+            visited.add(minNode);
+            
+            // Parse coordinates
+            const [currX, currY] = minNode.split(',').map(Number);
+            
+            // Visualize current cell as visiting
+            if (grid[currY][currX] !== CELL_START && grid[currY][currX] !== CELL_END) {
+                grid[currY][currX] = CELL_VISITING;
+                redraw();
+                const speed = parseInt(speedSelect.value);
+                if (speed > 0) await sleep(Math.max(1, 60 - speed * 3));
+            }
+            visitedCount++;
+            
+            // Get neighbors
+            const neighbors = getNeighbors(currX, currY, width, height);
+            
+            for (const neighbor of neighbors) {
+                const neighborKey = `${neighbor.x},${neighbor.y}`;
+                
+                if (!unvisited.has(neighborKey)) continue;
+                
+                const alt = distances.get(minNode) + distance({x: currX, y: currY}, neighbor);
+                
+                if (alt < distances.get(neighborKey)) {
+                    distances.set(neighborKey, alt);
+                    previous.set(neighborKey, minNode);
+                }
+            }
+            
+            // Mark current as visited
+            if (grid[currY][currX] !== CELL_START && grid[currY][currX] !== CELL_END) {
+                grid[currY][currX] = CELL_VISITED;
+                redraw();
+            }
+        }
+        
+        const endTime = performance.now();
+        
+        if (found) {
+            // Reconstruct and visualize path
+            await reconstructPath(previous, endKey);
+            return { found: true, pathLength: 0, visitedCount, executionTime: endTime - startTime };
+        }
+        
+        return { found: false, pathLength: 0, visitedCount, executionTime: endTime - startTime };
+    }
+
+    function heuristic(a, b) {
+        // Manhattan distance for A*
+        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    }
+
+    function distance(a, b) {
+        // Diagonal distance
+        const dx = Math.abs(a.x - b.x);
+        const dy = Math.abs(a.y - b.y);
+        return dx + dy > 1 ? 14 : 10;
+    }
+
+    function getNeighbors(x, y, width, height) {
+        const neighbors = [];
+        const directions = [
+            [-1, -1], [-1, 0], [-1, 1],
+            [0, -1],           [0, 1],
+            [1, -1],  [1, 0],  [1, 1]
+        ];
+        
+        for (const [dx, dy] of directions) {
+            const nx = x + dx;
+            const ny = y + dy;
+            
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height && 
+                grid[ny][nx] !== CELL_OBSTACLE) {
+                neighbors.push({ x: nx, y: ny });
+            }
+        }
+        
+        return neighbors;
+    }
+
+    async function reconstructPath(previous, endKey) {
+        const path = [];
+        let current = endKey;
+        
+        while (current) {
+            const [x, y] = current.split(',').map(Number);
+            path.unshift({ x, y });
+            current = previous.get(current);
+        }
+        
+        // Visualize path
+        const speed = parseInt(speedSelect.value);
+        for (let i = 1; i < path.length - 1; i++) {
+            grid[path[i].y][path[i].x] = CELL_PATH;
+            redraw();
+            if (speed > 0) await sleep(Math.max(1, 30 - speed));
+        }
+    }
+
+    async function runPathfinding() {
+        console.log('runPathfinding called');
+        console.log('startPoint:', startPoint);
+        console.log('endPoint:', endPoint);
+        
+        if (!startPoint || !endPoint) {
+            showError('Please set both start and end points');
+            return;
+        }
+
+        isRunning = true;
+        runBtn.disabled = true;
+        errorMessage.style.display = 'none';
+
+        try {
+            console.log('Starting pathfinding...');
+            
+            // Clear previous visualization
+            const width = grid[0].length;
+            const height = grid.length;
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    if (grid[y][x] === CELL_VISITED || grid[y][x] === CELL_PATH || grid[y][x] === CELL_VISITING) {
+                        grid[y][x] = CELL_EMPTY;
+                    }
+                }
+            }
+            redraw();
+
+            let result;
+            const algorithm = algorithmSelect.value;
+            console.log('Algorithm:', algorithm);
+            
+            if (algorithm === 'astar') {
+                result = await runAStar();
+            } else {
+                result = await runDijkstra();
+            }
+
+            console.log('Result:', result);
+            displayResults(result);
+
+        } catch (error) {
+            showError(error.message);
+            console.error(error);
+        } finally {
+            isRunning = false;
+            runBtn.disabled = false;
+        }
+    }
+
+    function displayResults(result) {
+        resultsDiv.style.display = 'grid';
+        document.getElementById('pathFound').textContent = result.found ? '✓ Found' : '✗ Not Found';
+        
+        // Calculate path length - count actual path cells from start to end
+        let pathLength = 0;
+        if (result.found) {
+            const width = grid[0].length;
+            const height = grid.length;
+            
+            // Find start point and trace path to end
+            let current = startPoint;
+            const visitedPath = new Set();
+            visitedPath.add(`${current.x},${current.y}`);
+            
+            // Count path cells by tracing from start
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    if (grid[y][x] === CELL_PATH) {
+                        pathLength++;
+                    }
+                }
+            }
+        }
+        document.getElementById('pathLength').textContent = result.found ? pathLength : '—';
+        document.getElementById('visitedCount').textContent = result.visitedCount;
+        document.getElementById('executionTime').textContent = result.executionTime.toFixed(1) + 'ms';
+    }
+
+    // Event listeners
+    runBtn.addEventListener('click', runPathfinding);
+    clearBtn.addEventListener('click', () => {
+        initializeGrid();
+        resultsDiv.style.display = 'none';
+    });
+
+    // Mode toggle buttons
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentMode = e.target.dataset.mode;
+        });
+    });
+
+    gridWidthInput.addEventListener('change', initializeGrid);
+    gridHeightInput.addEventListener('change', initializeGrid);
+
+    // Initialize
+    initializeGrid();
+    console.log('Pathfinding visualization initialized');
+</script>

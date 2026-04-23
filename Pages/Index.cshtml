@@ -1,0 +1,152 @@
+﻿@page
+@model IndexModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pathfinding Educational Website</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>A* and Djikstra Learning!</h1>
+
+        <!-- Tab Buttons -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('content')">Content!</button>
+            <button class="tab-btn" onclick="showTab('questions')">Questions</button>
+            <button class="tab-btn" onclick="showTab('visual')">See it !!!</button>
+        </div>
+
+        <!-- Content Tab -->
+        <div id="content-tab" class="tab-content active">
+            <h2>Learning Materials</h2>
+            <div class="pdf-toolbar">
+                <p class="pdf-toolbar-note">Open or download algorithm notes and guides.</p>
+            </div>
+            <div id="pdf-list" class="pdf-list">Loading PDFs...</div>
+        </div>
+
+        <!-- Questions Tab -->
+        <div id="questions-tab" class="tab-content">
+            <h2>Practice Quiz</h2>
+            <div class="quiz-setup-margin">
+                <label for="quiz-mode" class="quiz-select-label">Select Type of Questions:</label>
+                <select id="quiz-mode" class="quiz-select-input">
+                    <option value="mc">Multiple Choice</option>
+                    <option value="long">Long Answer</option>
+                    <option value="mixed">Mixed</option>
+                </select>
+            </div>
+            <div class="quiz-flex-wrap">
+                <label for="question-count">Number of Questions:</label>
+                <input id="question-count" type="number" min="1" value="10" class="quiz-num-input" />
+                <small class="text-muted">Choose how many questions to display.</small>
+            </div>
+            <div id="quiz-config-error" class="error-box"></div>
+            <button onclick="startQuiz()" class="btn-primary">Start Quiz</button>
+            <div id="quiz-container" class="quiz-container"></div>
+        </div>
+
+        <!-- Visualisation Tab -->
+        <div id="visual-tab" class="tab-content">
+            <h2>Pathfinding Visualiser</h2>
+            <div class="controls">
+                <label>Algorithm:</label>
+                <select id="algorithm-select">
+                    <option value="dijkstra">Dijkstra</option>
+                    <option value="astar">A*</option>
+                </select>
+                <button onclick="runAlgorithm()">Run Algorithm</button>
+                <button onclick="clearGrid()">Clear Grid</button>
+                <label class="config-label">Density: <span id="density-value">30%</span></label>
+                <input id="density-slider" type="range" min="0" max="0.9" step="0.05" value="0.3" />
+                <button onclick="randomWalls()">Random Walls</button>
+            </div>
+            <div class="controls">
+                <label class="config-label">Speed: <span id="speed-value" class="speed-val">Normal</span></label>
+                <input id="speed-slider" type="range" min="1" max="100" step="10" value="50" class="slider-input" />
+                <label class="config-label ml-10">
+                    <input type="checkbox" id="live-narration-toggle" checked />
+                    Live narration
+                </label>
+                <label class="config-label">
+                    <input type="checkbox" id="step-mode-toggle" />
+                    Step mode
+                </label>
+                <button id="next-step-btn" type="button" disabled>Next Decision</button>
+            </div>
+            <div class="visited-legend">
+                <span class="legend-chip"><span class="legend-swatch dijkstra"></span>Dijkstra visited nodes</span>
+                <span class="legend-chip"><span class="legend-swatch astar"></span>A* visited nodes</span>
+            </div>
+
+            <div class="visual-layout">
+                <canvas id="grid-canvas" width="500" height="500"></canvas>
+
+                <div id="visual-side-panels" class="visual-side-panels">
+                    <aside id="tutorial-panel" class="tutorial-panel">
+                        <div class="flex-between">
+                            <h3 class="mt-0">Quick Tutorial</h3>
+                            <button id="toggle-tutorial" type="button" class="btn-outline">
+                                Hide
+                            </button>
+                        </div>
+
+                        <div id="tutorial-content">
+                            <p class="mb-10">
+                                This visualiser shows how pathfinding algorithms explore a grid to find the shortest path from a start point to an end point. You can customize the grid by adding walls and adjusting the speed of the animation!!
+                            </p>
+                            <ol class="ol-padding">
+                                <li>Select an algorithm (Dijkstra or A*).</li>
+                                <li>Adjust speed to control animation.</li>
+                                <li>Set wall density, or click “Random Walls”.</li>
+                                <li>Run to see the explored path.</li>
+                                <li>Clear to reset the grid.</li>
+                            </ol>
+                        </div>
+                    </aside>
+
+                    <aside id="explanation-panel" class="explanation-panel" aria-live="polite">
+                        <h3 class="mt-0">Algorithm Narration</h3>
+                        <p id="explanation-status" class="status-text">Ready. Click “Run Algorithm” to start narrated steps.</p>
+                        <div id="explanation-log" class="explanation-log">
+                            <p class="explanation-entry">As the algorithm runs, this panel will explain each decision it makes.</p>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <div id="stats"></div>
+        </div>
+    </div>
+
+    <script src="~/js/site.js"></script>
+    <script>
+        const toggleBtn = document.getElementById('toggle-tutorial');
+        const tutorialContent = document.getElementById('tutorial-content');
+        const sidePanels = document.getElementById('visual-side-panels');
+
+        if (toggleBtn && tutorialContent) {
+            toggleBtn.addEventListener('click', () => {
+                const isHidden = tutorialContent.style.display === 'none';
+                tutorialContent.style.display = isHidden ? 'block' : 'none';
+                toggleBtn.textContent = isHidden ? 'Hide' : 'Show';
+
+                if (sidePanels) {
+                    sidePanels.classList.toggle('tutorial-hidden', !isHidden);
+                }
+            });
+        }
+    </script>
+
+    <footer class="footer-text">
+        © 2026 - Pathfinding Educational Website
+    </footer>
+</body>
+</html>

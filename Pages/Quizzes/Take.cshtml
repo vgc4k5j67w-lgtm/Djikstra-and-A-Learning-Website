@@ -1,0 +1,231 @@
+@page
+@model PathfindingEdu.Pages.Quizzes.TakeModel
+
+@{
+    ViewData["Title"] = "Quiz";
+}
+
+<div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+    <h2 style="margin-bottom: 20px;">@Model.Quiz?.Title</h2>
+
+@if (Model.Quiz == null)
+{
+    <div>Quiz not found.</div>
+}
+else if (Model.FilteredQuestions.Count == 0)
+{
+    <div style="padding: 20px; background: #f8d7da; border-radius: 4px;">
+        <strong>No questions found</strong>
+        <p style="margin: 10px 0 0 0;">There are no questions of the selected type in this quiz.</p>
+    </div>
+    <div style="margin-top: 20px;">
+        <a href="/" style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px;">Back to Home</a>
+    </div>
+}
+else
+{
+    <form method="post" id="quizForm">
+        <input type="hidden" name="QuizId" value="@Model.Quiz.Id" />
+        <input type="hidden" name="currentQuestionIndex" id="currentQuestionIndex" value="@Model.CurrentQuestionIndex" />
+
+        @if (Model.Submitted)
+        {
+            <div style="padding: 20px; border: 1px solid #4caf50; background: #e8f5e9; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="color: #2e7d32;">✓ Quiz Submitted!</h3>
+                <p>Thank you for completing the quiz. Your answers have been submitted for review.</p>
+<a href="/" style="display: inline-block; margin-top: 10px; padding: 8px 16px; background: #1976d2; color: white; text-decoration: none; border-radius: 4px;">Back to Home</a>
+            </div>
+        }
+        else
+        {
+            <div id="question-container" style="margin-bottom: 20px;">
+                @{
+                    var question = Model.FilteredQuestions.ElementAtOrDefault(Model.CurrentQuestionIndex);
+                }
+                
+                @if (question != null)
+                {
+                    <div style="margin-bottom: 15px;">
+                        <span style="color: #666; font-size: 14px;">Question @(Model.CurrentQuestionIndex + 1) of @Model.FilteredQuestions.Count</span>
+                    </div>
+
+                    <div style="margin-bottom: 18px; padding: 15px 20px; border: 2px solid #1976d2; border-radius: 8px; background: #f5f5f5;">
+                        <div style="font-size: 18px; margin-bottom: 10px;"><strong>@question.Text</strong></div>
+                        <div style="color: #666; font-size: 13px;">@question.Points points</div>
+                    </div>
+
+                    @if (question.Type == PathfindingEdu.Models.QuestionType.MultipleChoice)
+                    {
+                        <div style="margin-bottom: 15px;">
+                            @foreach (var ch in question.Choices ?? Enumerable.Empty<PathfindingEdu.Models.Choice>())
+                            {
+                                <div style="margin-bottom: 8px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+                                        <input type="radio"
+                                               class="mcq-option"
+                                               name="answer_@question.Id"
+                                               value="@ch.Id"
+                                               data-question-id="@question.Id"
+                                               data-is-correct="@ch.IsCorrect.ToString().ToLower()"
+                                               data-choice-id="@ch.Id"
+                                               data-explanation="@(System.Net.WebUtility.HtmlEncode(ch.Explanation ?? ""))"
+                                               style="width: 18px; height: 18px;" />
+                                        <span>@ch.Text</span>
+                                    </label>
+                                </div>
+                            }
+                            <div id="feedback_@question.Id" style="display: none; margin-top: 12px; padding: 12px 15px; border-radius: 4px; background: #f8d7da; border-left: 4px solid #dc3545; color: #721c24; font-weight: 500;"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="margin-bottom: 15px;">
+                            
+                            @{
+                                var hasHints = question.Hints != null && question.Hints.Any();
+                            }
+                            @if (hasHints)
+                            {
+                                <div style="margin-bottom: 12px;">
+                                    <details style="padding: 10px; background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 4px; cursor: pointer;">
+                                        <summary style="font-weight: 600; color: #004085;">💡 Hints (@question.Hints.Count())</summary>
+                                        <div style="margin-top: 10px; color: #004085;">
+                                            @foreach (var hint in question.Hints.OrderBy(h => h.Order))
+                                            {
+                                                <div style="margin: 8px 0;">• @hint.Text</div>
+                                            }
+                                        </div>
+                                    </details>
+                                </div>
+                            }
+                            <textarea class="long-answer"
+                                      data-question-id="@question.Id"
+                                      name="answer_@question.Id"
+                                      rows="6"
+                                      style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; resize: vertical;"
+                                      placeholder="Type your answer here..."></textarea>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                @if (Model.CurrentQuestionIndex > 0)
+                {
+                    <button type="button" onclick="navigateTo(@Model.CurrentQuestionIndex - 1)" style="padding: 10px 20px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">← Previous</button>
+                }
+                
+                @if (Model.CurrentQuestionIndex < Model.FilteredQuestions.Count - 1)
+                {
+                    <button type="button" onclick="navigateTo(@Model.CurrentQuestionIndex + 1)" style="padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer;">Next →</button>
+                }
+                @if (Model.CurrentQuestionIndex == Model.FilteredQuestions.Count - 1)
+                {
+                    <button type="submit" name="submitButton" value="Submit Quiz" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Submit Quiz</button>
+                }
+            </div>
+        }
+    </form>
+}
+
+<script>
+    const quizId = @Model.Quiz?.Id ?? 0;
+
+    function storageKey(questionId) {
+        return `quiz_${quizId}_q_${questionId}`;
+    }
+
+    function saveQuestionId(questionId) {
+        const key = `quiz_${quizId}_questions`;
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        if (!existing.includes(questionId)) {
+            existing.push(questionId);
+            localStorage.setItem(key, JSON.stringify(existing));
+        }
+    }
+
+    function clearQuizStorage() {
+        const key = `quiz_${quizId}_questions`;
+        const ids = JSON.parse(localStorage.getItem(key) || '[]');
+        ids.forEach(id => localStorage.removeItem(storageKey(id)));
+        localStorage.removeItem(key);
+    }
+
+    function showFeedback(questionId, text) {
+        const el = document.getElementById(`feedback_${questionId}`);
+        if (!el) return;
+        if (!text) {
+            el.style.display = 'none';
+            el.textContent = '';
+            return;
+        }
+        el.textContent = text;
+        el.style.display = 'block';
+    }
+
+    function navigateTo(index) {
+        document.getElementById('currentQuestionIndex').value = index;
+        document.getElementById('quizForm').submit();
+    }
+
+    // Handle MCQ feedback display
+    document.querySelectorAll('input.mcq-option').forEach(radio => {
+        const questionId = parseInt(radio.dataset.questionId, 10);
+        const choiceId = parseInt(radio.dataset.choiceId, 10);
+        
+        radio.addEventListener('change', (e) => {
+            const value = e.target.value;
+            localStorage.setItem(storageKey(questionId), value);
+            saveQuestionId(questionId);
+
+            const isCorrect = e.target.dataset.isCorrect === 'true';
+            const explanation = e.target.dataset.explanation ? 
+                decodeURIComponent(e.target.dataset.explanation.replace(/&#x([0-9A-F]{2});/g, '%$1')) : '';
+            
+            if (!isCorrect) {
+                // Show the specific explanation for the wrong answer
+                const feedbackText = explanation || '❌ Incorrect. Please try another option.';
+                showFeedback(questionId, feedbackText);
+            } else {
+                showFeedback(questionId, '✓ Correct!');
+            }
+        });
+    });
+
+    document.querySelectorAll('textarea.long-answer').forEach(textarea => {
+        const questionId = parseInt(textarea.dataset.questionId, 10);
+        textarea.addEventListener('input', (e) => {
+            localStorage.setItem(storageKey(questionId), e.target.value || '');
+            saveQuestionId(questionId);
+        });
+    });
+
+    // Restore saved answers
+    document.querySelectorAll('input.mcq-option').forEach(radio => {
+        const questionId = parseInt(radio.dataset.questionId, 10);
+        const saved = localStorage.getItem(storageKey(questionId));
+        if (saved && radio.value === saved) {
+            radio.checked = true;
+            const isCorrect = radio.dataset.isCorrect === 'true';
+            if (!isCorrect) showFeedback(questionId, '❌ Incorrect. Please try another option.');
+        }
+    });
+
+    document.querySelectorAll('textarea.long-answer').forEach(textarea => {
+        const questionId = parseInt(textarea.dataset.questionId, 10);
+        const saved = localStorage.getItem(storageKey(questionId));
+        if (saved !== null) textarea.value = saved;
+    });
+
+    // Clear local storage on final submit
+    const quizForm = document.getElementById('quizForm');
+    if (quizForm) {
+        quizForm.addEventListener('submit', (e) => {
+            const submitButton = document.querySelector('button[name="submitButton"]');
+            if (submitButton && submitButton === document.activeElement) {
+                clearQuizStorage();
+            }
+        });
+    }
+</script>
+</div>

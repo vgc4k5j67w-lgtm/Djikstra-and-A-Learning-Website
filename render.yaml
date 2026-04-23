@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: pathfindingedu
+    env: docker
+    autoDeploy: true
+    healthCheckPath: /
+    disk:
+      name: pathfindingedu-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__DefaultConnection
+        value: Data Source=/var/data/pathfinding.db
