@@ -19,7 +19,6 @@ public class Question
     public int Points { get; set; } = 0;
     public int Order { get; set; } = 0;
     public string ModelAnswer { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<Choice>? Choices { get; set; }
     public ICollection<Hint>? Hints { get; set; }

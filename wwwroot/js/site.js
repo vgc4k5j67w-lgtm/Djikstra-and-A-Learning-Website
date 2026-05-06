@@ -778,7 +778,7 @@ const VISITED_COLORS_BY_ALGORITHM = {
     astar: '#c9a4ff'
 };
 
-let activeVisualizationAlgorithm = 'dijkstra';
+let activeVisualisationAlgorithm = 'dijkstra';
 let lastExplanationFlushAt = 0;
 let pendingExplanationMessages = [];
 let explanationFlushTimer = null;
@@ -864,7 +864,6 @@ function queueNarrationEvent(message, force = false) {
 // Show or hide the step-by-step buttons on the UI
 function updateStepModeControls() {
     const nextButton = document.getElementById('next-step-btn');
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (nextButton) {
         nextButton.disabled = !(isAlgorithmRunning && isStepModeEnabled());
     }
@@ -872,7 +871,6 @@ function updateStepModeControls() {
 
 // Move exactly one step forward in the algorithm
 function advanceStepMode() {
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (pendingStepResolver) {
         const resolver = pendingStepResolver;
         pendingStepResolver = null;
@@ -881,7 +879,6 @@ function advanceStepMode() {
 }
 
 async function waitForStepMode(stepHint = 'Step mode active. Click “Next Decision” to continue.') {
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (!isAlgorithmRunning || !isStepModeEnabled()) return;
 
     setExplanationStatus(stepHint);
@@ -896,7 +893,7 @@ async function waitForStepMode(stepHint = 'Step mode active. Click “Next Decis
 
 // Figure out what color this cell should be based on which algorithm is running
 function getVisitedColorForCell(cell) {
-    const algorithmKey = cell.visitedBy || activeVisualizationAlgorithm;
+    const algorithmKey = cell.visitedBy || activeVisualisationAlgorithm;
     return VISITED_COLORS_BY_ALGORITHM[algorithmKey] || VISITED_COLORS_BY_ALGORITHM.dijkstra;
 }
 
@@ -916,16 +913,15 @@ function getExplanationElements() {
 // Empty out the log panel completely so we can start fresh
 function clearExplanationPanel(statusText = 'Ready. Click “Run Algorithm” to start narrated steps.') {
     const { status, log } = getExplanationElements();
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (status) status.textContent = statusText;
     pendingExplanationMessages = [];
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
     if (explanationFlushTimer) {
         clearTimeout(explanationFlushTimer);
         explanationFlushTimer = null;
     }
     lastExplanationFlushAt = 0;
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
     if (log) {
         log.innerHTML = '<p class="explanation-entry">As the algorithm runs, this panel will explain each decision it makes.</p>';
     }
@@ -945,9 +941,9 @@ function setExplanationStatus(message) {
 
 // Clear all the visited flags and scores from the grid so we can run again
 function resetTraversalStates() {
-    // Loop through each item so we can update or check them one by one.
+  
     for (let r = 0; r < gridRows; r++) {
-        // Loop through each item so we can update or check them one by one.
+
         for (let c = 0; c < gridCols; c++) {
             grid[r][c].state = 'empty';
             grid[r][c].visitedBy = null;
@@ -958,10 +954,10 @@ function resetTraversalStates() {
 // Generate the baseline 2D array and HTML elements for our grid
 function initGrid() {
     grid = [];
-    // Loop through each item so we can update or check them one by one.
+   
     for (let r = 0; r < gridRows; r++) {
         grid[r] = [];
-        // Loop through each item so we can update or check them one by one.
+        
         for (let c = 0; c < gridCols; c++) {
             grid[r][c] = {
                 isWall: false,
@@ -1196,6 +1192,26 @@ function clearGrid() {
     drawGrid();
 }
 
+function setVisualisationControlsEnabled(enabled) {
+    const ids = ['run-btn', 'clear-btn', 'random-btn', 'algorithm-select', 'algorithm'];
+    ids.forEach(id => {
+        const element = document.getElementById(id);
+        if (!element) return;
+        element.disabled = !enabled;
+        if (enabled) {
+            element.removeAttribute('disabled');
+        }
+    });
+}
+
+function disableVisualisationControls() {
+    setVisualisationControlsEnabled(false);
+}
+
+function enableVisualisationControls() {
+    setVisualisationControlsEnabled(true);
+}
+
 async function runAlgorithm() {
     console.log('runAlgorithm called');
     
@@ -1209,21 +1225,11 @@ async function runAlgorithm() {
     isAlgorithmRunning = true;
     
     // disable the clear run and obstacles while the algorithm is running
-    const runBtn = document.querySelector('button[onclick="runAlgorithm()"]');
-    const clearBtn = document.querySelector('button[onclick="clearGrid()"]');
-    const randomBtn = document.querySelector('button[onclick="randomWalls()"]');
-    
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
-    if (runBtn) runBtn.disabled = true;
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
-    if (clearBtn) clearBtn.disabled = true;
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
-    if (randomBtn) randomBtn.disabled = true;
+    disableVisualisationControls();
     
     const algorithmSelect = document.getElementById('algorithm-select') || document.getElementById('algorithm');
-    if (algorithmSelect) algorithmSelect.disabled = true;
     const algorithm = algorithmSelect ? algorithmSelect.value : 'dijkstra';
-    activeVisualizationAlgorithm = algorithm;
+    activeVisualisationAlgorithm = algorithm;
     console.log('Algorithm selected:', algorithm);
 
     resetTraversalStates();
@@ -1274,12 +1280,10 @@ async function runAlgorithm() {
         scheduleExplanationFlush(true);
         // when the algorithm end, enable the buttons again
         isAlgorithmRunning = false;
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
-        if (runBtn) runBtn.disabled = false;
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
-        if (clearBtn) clearBtn.disabled = false;
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
-        if (randomBtn) randomBtn.disabled = false;
+        console.log('Finally in runAlgorithm: enabling buttons');
+        
+        enableVisualisationControls();
+        console.log('Visualisation controls re-enabled');
         updateStepModeControls();
     }
 }
@@ -1384,6 +1388,12 @@ async function runAStarVisualization(startX, startY, endX, endY, gridArray, widt
     
     const endTime = performance.now();
     
+    // Enable buttons after search
+    isAlgorithmRunning = false;
+    enableVisualisationControls();
+    console.log('Visualisation controls re-enabled after A* search');
+    updateStepModeControls();
+    
     // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (found) {
         setExplanationStatus('Goal reached. Now tracing back through the best choices to draw the final path.');
@@ -1396,6 +1406,7 @@ async function runAStarVisualization(startX, startY, endX, endY, gridArray, widt
         queueNarrationEvent('A* could not reach the goal because all possible routes were blocked.', true);
         displayStats(false, visitedCount, endTime - startTime);
     }
+    console.log('runAStarVisualization finished');
 }
 
 // Dijkstra Visualization
@@ -1510,6 +1521,12 @@ async function runDijkstraVisualization(startX, startY, endX, endY, gridArray, w
     
     const endTime = performance.now();
     
+    // Enable buttons after search
+    isAlgorithmRunning = false;
+    enableVisualisationControls();
+    console.log('Visualisation controls re-enabled after Dijkstra search');
+    updateStepModeControls();
+    
     // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (found) {
         setExplanationStatus('Goal reached. Now tracing back through the best choices to draw the final path.');
@@ -1522,6 +1539,7 @@ async function runDijkstraVisualization(startX, startY, endX, endY, gridArray, w
         queueNarrationEvent('Dijkstra could not reach the goal because all possible routes were blocked.', true);
         displayStats(false, visitedCount, endTime - startTime);
     }
+    console.log('runDijkstraVisualization finished');
 }
 
 // Figure out the Manhattan distance to guess how far we are from the goal
@@ -1588,12 +1606,13 @@ async function reconstructPathAStar(previous, endKey, startX, startY, endX, endY
 
     setExplanationStatus('Run complete. Compare how this algorithm explored the grid before finding the path.');
     scheduleExplanationFlush(true);
+    console.log('reconstructPathAStar finished');
 }
 
 // Show the final time and visited node count on the UI
 function displayStats(found, visitedCount, executionTime) {
     const statsDiv = document.getElementById('stats');
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+    
     if (statsDiv) {
         statsDiv.innerHTML = `
             <p class="msg-box" style="background: ${found ? '#d4edda' : '#f8d7da'};">
@@ -1613,7 +1632,7 @@ function sleep(ms) {
 
 // Just trigger the randomizer function and lock it in
 function randomWalls() {
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+    
     if (!grid || grid.length === 0) initGrid();
     const slider = document.getElementById('density-slider');
     const density = slider ? parseFloat(slider.value) : 0.3;
@@ -1629,10 +1648,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const nextStepButton = document.getElementById('next-step-btn');
     const questionCountInput = document.getElementById('question-count');
 
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+    
     if (liveNarrationToggle) {
         liveNarrationToggle.addEventListener('change', function () {
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+           
             if (!this.checked) {
                 pendingExplanationMessages = [];
             } else {
@@ -1641,10 +1660,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+    
     if (stepModeToggle) {
         stepModeToggle.addEventListener('change', function () {
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+            
             if (!this.checked) {
                 advanceStepMode();
                 setExplanationStatus('Step mode off. The run continues automatically.');
@@ -1655,17 +1674,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+    
     if (nextStepButton) {
         nextStepButton.addEventListener('click', function () {
             advanceStepMode();
         });
     }
 
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+    
     if (questionCountInput) {
         questionCountInput.addEventListener('input', function () {
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+            
             if (this.value.trim() && parseInt(this.value, 10) > 0) {
             }
         });
@@ -1674,14 +1693,14 @@ document.addEventListener('DOMContentLoaded', function () {
     updateStepModeControls();
 
     const canvas = document.getElementById('grid-canvas');
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+    
     if (!canvas) return;
     const rectFromCanvas = () => canvas.getBoundingClientRect();
 
     // Update density percentage display when slider changes
     const densitySlider = document.getElementById('density-slider');
     const densityValue = document.getElementById('density-value');
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+    
     if (densitySlider && densityValue) {
         densitySlider.addEventListener('input', function() {
             const percent = Math.round(parseFloat(this.value) * 100);
