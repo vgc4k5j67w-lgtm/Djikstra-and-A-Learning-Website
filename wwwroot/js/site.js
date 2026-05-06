@@ -225,6 +225,16 @@ async function loadPdfs() {
     }
 }
 
+function renderFallbackPdfList(container, message) {
+    if (!container) return;
+    container.innerHTML = `
+        <div class="pdf-empty-wrap">
+            <p class="pdf-empty">Unable to load PDF files.</p>
+            <p class="pdf-help">${message}</p>
+        </div>
+    `;
+}
+
 // Load questions/quizzes for the Questions tab
 // Fetch the quiz questions from the API to display to the user
 function loadQuestions() {
