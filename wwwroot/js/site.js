@@ -16,10 +16,8 @@ let isAlgorithmRunning = false;  // Flag to prevent interactions during algorith
 
 // Update the grid cell to be a wall (or remove a wall) if it's within bounds
 function setWallAt(row, col, makeWall) {
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (row < 0 || row >= gridRows || col < 0 || col >= gridCols) return;
     const cell = grid[row][col];
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (cell.isStart || cell.isGoal) return;
     cell.isWall = makeWall;
 }
@@ -157,10 +155,8 @@ function formatPdfSize(bytes) {
 
 // Format the raw date string into something nicer for the UI
 function formatPdfDate(isoDate) {
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (!isoDate) return 'Unknown date';
     const date = new Date(isoDate);
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (Number.isNaN(date.getTime())) return 'Unknown date';
     return date.toLocaleDateString(undefined, {
         year: 'numeric',
@@ -173,7 +169,6 @@ function formatPdfDate(isoDate) {
 async function loadPdfs() {
     console.log('loadPdfs: Starting PDF load');
     const pdfList = document.getElementById('pdf-list');
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (!pdfList) {
         console.error('loadPdfs: pdf-list element not found');
         return;
@@ -184,7 +179,7 @@ async function loadPdfs() {
     try {
         console.log('loadPdfs: Fetching /api/resources/pdfs');
         const res = await fetch('/api/resources/pdfs');
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
         if (!res.ok) {
             const errorText = await res.text();
             console.error('loadPdfs: API error', res.status, errorText);
@@ -194,7 +189,6 @@ async function loadPdfs() {
 
         const pdfs = await res.json();
         console.log('loadPdfs: Received PDFs:', pdfs);
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (!Array.isArray(pdfs) || pdfs.length === 0) {
             console.log('loadPdfs: No PDFs found');
             pdfList.innerHTML = `
@@ -329,7 +323,6 @@ async function startQuiz() {
         const res = await fetch('/api/quizzes');
         console.log('Quizzes response status:', res.status);
         
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (!res.ok) {
             const errorText = await res.text();
             throw new Error(`HTTP ${res.status}: ${res.statusText} - ${errorText}`);
@@ -338,7 +331,6 @@ async function startQuiz() {
         const quizzes = await res.json();
         console.log('Quizzes fetched:', quizzes);
         
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (!Array.isArray(quizzes) || quizzes.length === 0) {
             container.innerHTML = '<p>No quizzes available. Please seed the database.</p>';
             return;
@@ -352,7 +344,6 @@ async function startQuiz() {
         const questionsRes = await fetch(`/api/quizzes/${currentQuiz.id}/questions?mode=${quizMode}`);
         console.log('Questions response status:', questionsRes.status);
         
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (!questionsRes.ok) {
             const errorText = await questionsRes.text();
             throw new Error(`HTTP ${questionsRes.status}: ${questionsRes.statusText} - ${errorText}`);
@@ -361,13 +352,11 @@ async function startQuiz() {
         const questions = await questionsRes.json();
         console.log('Questions fetched:', questions);
         
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (!Array.isArray(questions) || questions.length === 0) {
             container.innerHTML = '<p>No questions available for this mode.</p>';
             return;
         }
 
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (requestedCount > questions.length) {
             showQuizConfigError(`Not enough questions available for this mode. Please choose ${questions.length} or fewer.`);
             container.innerHTML = '';
@@ -392,7 +381,6 @@ function displayQuestion() {
     const container = document.getElementById('quiz-container');
     const question = currentQuestions[currentQuestionIndex];
     
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (!question) {
         container.innerHTML = '<p>No questions available.</p>';
         return;
@@ -409,10 +397,8 @@ function displayQuestion() {
             </div>
     `;
     
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (question.type === 'MultipleChoice' && question.choices && question.choices.length > 0) {
         html += '<div class="quiz-margin" id="choices-container">';
-        // Loop through each item so we can update or check them one by one.
         for (const choice of question.choices) {
             html += `
                 <div class="choice-margin choice-container" data-choice-id="${choice.id}" data-is-correct="${choice.isCorrect}" data-explanation="${(choice.explanation || '').replace(/"/g, '&quot;')}">
@@ -428,7 +414,6 @@ function displayQuestion() {
     } else {
         // Long answer question - show hints if available
         html += '<div class="quiz-margin">';
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (question.hints && question.hints.length > 0) {
             html += `
                 <div class="hints-margin">
@@ -457,18 +442,16 @@ function displayQuestion() {
     // Navigation buttons
     html += '<div class="action-buttons">';
     
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (currentQuestionIndex > 0) {
         html += '<button onclick="previousQuestion()" class="btn-secondary">← Previous</button>';
     }
     
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (question.type === 'LongAnswer') {
         // For long-answer questions, add Submit Answer button
         html += '<button onclick="submitAnswer()" class="btn-warning">Submit Answer</button>';
     }
     
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
     if (currentQuestionIndex < currentQuestions.length - 1) {
         html += '<button onclick="nextQuestion()" class="btn-primary">Next →</button>';
     } else {
@@ -480,13 +463,10 @@ function displayQuestion() {
     container.innerHTML = html;
 //----------------------------------------------------------------------------------------------------------------------
     // Restore saved answers from localStorage
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (question.type === 'MultipleChoice') {
         const savedAnswer = localStorage.getItem(`quiz_q${question.id}_answer`);
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (savedAnswer) {
             const radio = document.querySelector(`input[name="quiz-answer"][value="${savedAnswer}"]`);
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (radio) {
                 radio.checked = true;
                 // Re-run checkAnswer to show feedback
@@ -497,7 +477,6 @@ function displayQuestion() {
         // Long-form question
         const savedAnswer = localStorage.getItem(`quiz_q${question.id}_answer`);
         const textarea = document.getElementById('quiz-answer-text');
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (savedAnswer && textarea) {
             textarea.value = savedAnswer;
             textarea.disabled = true;
@@ -505,7 +484,6 @@ function displayQuestion() {
         
         // Restore model answer and marking if already submitted
         const savedMarks = localStorage.getItem(`quiz_q${question.id}_marks`);
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (savedMarks !== null) {
             submitAnswer();
         }
@@ -516,14 +494,12 @@ function displayQuestion() {
 // See if the user clicked the right choice and update their score
 function checkAnswer() {
     const question = currentQuestions[currentQuestionIndex];
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (!question || question.type !== 'MultipleChoice') return;
     
     console.log('Question:', question);
     console.log('Choices:', question.choices);
     
     const selectedRadio = document.querySelector('input[name="quiz-answer"]:checked');
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (!selectedRadio) {
         return;
     }
@@ -549,7 +525,6 @@ function checkAnswer() {
         console.log('Choice ID:', choiceId, 'isCorrect:', isCorrect);
         
         // Conditional branch validating node accuracy
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (isCorrect) {
             // Evaluates true: injects success CSS stylings directly into the DOM node
             label.style.border = '2px solid #28a745';
@@ -560,7 +535,6 @@ function checkAnswer() {
             label.style.backgroundColor = '#f8d7da';
             
             // Extracts API-provided textual explanation for incorrect choices
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (feedbackContainer) {
               feedbackContainer.textContent = explanation || 'Incorrect';
                 feedbackContainer.style.display = 'block';
@@ -628,7 +602,7 @@ function submitAnswer() {
         
         // disable text area and submit button
         textAnswer.disabled = true;
-        const submitBtn = Array.from(document.querySelectorAll('button')).find(btn => btn.textContent.includes('Submit Answer'));        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+        const submitBtn = Array.from(document.querySelectorAll('button')).find(btn => btn.textContent.includes('Submit Answer'));        
         if (submitBtn) {
             submitBtn.style.display = 'none';
         }
@@ -645,7 +619,6 @@ function selectMarks(questionId, marks) {
     const markingOptions = document.getElementById('marking-options');
     const buttons = markingOptions.querySelectorAll('button');
     buttons.forEach((btn, index) => {
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (index === marks) {
             btn.style.background = '#28a745';
             btn.style.color = 'white';
@@ -661,7 +634,6 @@ function selectMarks(questionId, marks) {
 // Go to next question
 // Move on to the next question in the list
 function nextQuestion() {
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (currentQuestionIndex < currentQuestions.length - 1) {
         currentQuestionIndex++;
         displayQuestion();
@@ -677,7 +649,6 @@ async function finishQuiz() {
     let marksObtained = 0;
     const answers = [];
     
-    // Loop through each item so we can update or check them one by one.
     for (let i = 0; i < currentQuestions.length; i++) {
         const question = currentQuestions[i];
         let answer = null;
@@ -685,16 +656,13 @@ async function finishQuiz() {
         
         totalMarks += question.points;
         
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (question.type === 'MultipleChoice') {
             // Retrieve answer from localStorage
             const savedAnswer = localStorage.getItem(`quiz_q${question.id}_answer`);
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (savedAnswer) {
                 answer = savedAnswer;
                 // Check if correct answer
                 const selectedChoice = question.choices.find(c => c.id === parseInt(answer));
-                // Check if the condition is met before proceeding to avoid errors or wrong behavior.
                 if (selectedChoice && selectedChoice.isCorrect) {
                     marks = question.points;
                 }
@@ -718,20 +686,17 @@ async function finishQuiz() {
     
     // Check if quiz is complete
     let unansweredCount = 0;
-    // Loop through each item so we can update or check them one by one.
     for (let i = 0; i < currentQuestions.length; i++) {
         const question = currentQuestions[i];
         const savedAnswer = localStorage.getItem(`quiz_q${question.id}_answer`);
         console.log(`Question ${i} (ID: ${question.id}, Type: ${question.type}): saved answer =`, savedAnswer);
-        
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
         if (!savedAnswer) {
             unansweredCount++;
         } else if (question.type === 'LongAnswer') {
             // For long-form, also check if marks have been assigned
             const savedMarks = localStorage.getItem(`quiz_q${question.id}_marks`);
             console.log(`Question ${i} marks:`, savedMarks);
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (!savedMarks) {
                 unansweredCount++;
             }
@@ -740,7 +705,6 @@ async function finishQuiz() {
     
     console.log('Total unanswered count:', unansweredCount, 'Total questions:', currentQuestions.length);
     
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (unansweredCount > 0) {
         container.innerHTML = `
             <div class="incomplete-box">
@@ -824,11 +788,9 @@ function getNarrationThrottleDelay() {
 // Write all the queued-up explanation logs to the screen
 function flushPendingExplanationMessages() {
     const { log } = getExplanationElements();
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (!log || pendingExplanationMessages.length === 0 || !isLiveNarrationEnabled()) return;
 
     const fragment = document.createDocumentFragment();
-    // Loop through each item so we can update or check them one by one.
     for (const message of pendingExplanationMessages) {
         const entry = document.createElement('p');
         entry.className = 'explanation-entry';
@@ -850,9 +812,7 @@ function flushPendingExplanationMessages() {
 
 // Setup a timer to print the next batch of explanations
 function scheduleExplanationFlush(force = false) {
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (force) {
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (explanationFlushTimer) {
             clearTimeout(explanationFlushTimer);
             explanationFlushTimer = null;
@@ -861,7 +821,6 @@ function scheduleExplanationFlush(force = false) {
         return;
     }
 
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (explanationFlushTimer) return;
 
     const elapsed = performance.now() - lastExplanationFlushAt;
@@ -874,7 +833,6 @@ function scheduleExplanationFlush(force = false) {
 
 // Add a new message to the explanation log queue
 function queueNarrationEvent(message, force = false) {
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (!isLiveNarrationEnabled()) return;
     pendingExplanationMessages.push(message);
     scheduleExplanationFlush(force);
@@ -954,7 +912,6 @@ function addExplanationStep(message) {
 // Update the little status text above the explanation log
 function setExplanationStatus(message) {
     const { status } = getExplanationElements();
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (status) status.textContent = message;
 }
 
@@ -998,11 +955,8 @@ function getStartGoal() {
     for (let r = 0; r < gridRows; r++) {
         // Loop through each item so we can update or check them one by one.
         for (let c = 0; c < gridCols; c++) {
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (grid[r][c].isStart) start = { r, c };
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (grid[r][c].isGoal) goal = { r, c };
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (start && goal) return { start, goal };
         }
     }
@@ -1025,12 +979,10 @@ function findPathBFS(startR, startC, goalR, goalC) {
     // Keep looping through as long as we still have items to process.
     while (q.length > 0) {
         const cur = q.shift();
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (cur.r === goalR && cur.c === goalC) {
             // reconstruct path
             const path = [];
             let node = cur;
-            // Keep looping through as long as we still have items to process.
             while (node) {
                 path.push({ r: node.r, c: node.c });
                 node = parent[node.r][node.c];
@@ -1043,11 +995,9 @@ function findPathBFS(startR, startC, goalR, goalC) {
         for (const [dr, dc] of dirs) {
             const nr = cur.r + dr;
             const nc = cur.c + dc;
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
             if (nr < 0 || nr >= gridRows || nc < 0 || nc >= gridCols) continue;
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (visited[nr][nc]) continue;
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (grid[nr][nc].isWall) continue;
             visited[nr][nc] = true;
             parent[nr][nc] = cur;
@@ -1078,7 +1028,6 @@ function generateRandomPath(startR, startC, goalR, goalC) {
         for (const [dr, dc] of dirs) {
             const nr = r + dr;
             const nc = c + dc;
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (nr >= 0 && nr < gridRows && nc >= 0 && nc < gridCols) {
                 neighbors.push({ r: nr, c: nc, dr, dc });
             }
@@ -1093,7 +1042,6 @@ function generateRandomPath(startR, startC, goalR, goalC) {
         
         //  50/50 to move to goal/ move randomly
         let nextCell;
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (Math.random() < 0.3 && neighbors.length > 0) {
             nextCell = neighbors[0];
         } else if (neighbors.length > 0) {
@@ -1113,7 +1061,6 @@ function generateRandomPath(startR, startC, goalR, goalC) {
 // Scatter walls randomly but make sure there's always at least one valid path
 function RandomizeGrid(density = 0.3, maxAttempts = 12) {
 
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (!grid || grid.length === 0) initGrid(); // makes sure grid is initialized
 
     const { start, goal } = getStartGoal();
@@ -1122,14 +1069,10 @@ function RandomizeGrid(density = 0.3, maxAttempts = 12) {
     // this generates the random path
 
     // Try random generation with the guaranteed path
-    // Loop through each item so we can update or check them one by one.
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        // randomize (respecting guaranteed path)
-        // Loop through each item so we can update or check them one by one.
+        // randomise (respecting guaranteed path)
         for (let r = 0; r < gridRows; r++) {
-            // Loop through each item so we can update or check them one by one.
             for (let c = 0; c < gridCols; c++) {
-                // Check if the condition is met before proceeding to avoid errors or wrong behavior.
                 if (!grid[r][c].isStart && !grid[r][c].isGoal && !pathCells.has(`${r},${c}`)) {
                     grid[r][c].isWall = Math.random() < density;
                 } else {
@@ -1140,7 +1083,6 @@ function RandomizeGrid(density = 0.3, maxAttempts = 12) {
 
         // makes sure that there is a valid path
         const path = findPathBFS(start.r, start.c, goal.r, goal.c);
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (path) {
             drawGrid();
             return; // success
@@ -1168,15 +1110,14 @@ function drawGrid() {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Loop through each item so we can update or check them one by one.
+
     for (let r = 0; r < gridRows; r++) {
-        // Loop through each item so we can update or check them one by one.
+       
         for (let c = 0; c < gridCols; c++) {
             const x = c * cellSize;
             const y = r * cellSize;
             
             // colour the grid based on its state
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (grid[r][c].isWall) {
                 ctx.fillStyle = '#333';
                 ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
@@ -1235,7 +1176,6 @@ async function runAlgorithm() {
     console.log('runAlgorithm called');
     
     // Prevent running if already executing
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (isAlgorithmRunning) {
         console.log('Algorithm already running');
         return;
@@ -1258,7 +1198,6 @@ async function runAlgorithm() {
     const { start, goal } = getStartGoal();
     console.log('Start:', start, 'Goal:', goal);
     queueNarrationEvent(`Start at (${start.c}, ${start.r}). Goal is (${goal.c}, ${goal.r}).`, true);
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (algorithm === 'astar') {
         addExplanationStep('A* uses f(n) = g(n) + h(n), balancing distance traveled and estimated distance to the goal.');
     } else {
@@ -1271,10 +1210,10 @@ async function runAlgorithm() {
     
     // convert the grid to a 2d arrays for the algorithm to be able to run
     const gridArray = [];
-    // Loop through each item so we can update or check them one by one.
+
     for (let y = 0; y < height; y++) {
         gridArray[y] = [];
-        // Loop through each item so we can update or check them one by one.
+     
         for (let x = 0; x < width; x++) {
             gridArray[y][x] = grid[y][x].isWall ? 1 : 0;
         }
@@ -1283,14 +1222,14 @@ async function runAlgorithm() {
     console.log('Running algorithm...');
     
     try {
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
         if (algorithm === 'astar') {
             await runAStarVisualization(start.c, start.r, goal.c, goal.r, gridArray, width, height);
         } else {
             await runDijkstraVisualization(start.c, start.r, goal.c, goal.r, gridArray, width, height);
         }
     } finally {
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
         if (pendingStepResolver) {
             const resolver = pendingStepResolver;
             pendingStepResolver = null;
@@ -1334,13 +1273,13 @@ async function runAStarVisualization(startX, startY, endX, endY, gridArray, widt
         const current = openSet.shift();
         const currentKey = `${current.x},${current.y}`;
 
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+   
         if (shouldNarrateDecision(visitedCount + 1)) {
             addExplanationStep(`A*: considering (${current.x}, ${current.y}) with current f-score ${current.f.toFixed(1)}.`);
         }
         
         // Check if reached end
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+     
         if (current.x === endX && current.y === endY) {
             found = true;
             break;
@@ -1349,10 +1288,10 @@ async function runAStarVisualization(startX, startY, endX, endY, gridArray, widt
         closedSet.add(currentKey);
         
         // Visualize visiting
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+   
         if (!(current.x === startX && current.y === startY) && 
             !(current.x === endX && current.y === endY)) {
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+     
             if (grid[current.y] && grid[current.y][current.x] !== undefined) {
                 grid[current.y][current.x].state = 'visiting';
             }
@@ -1363,7 +1302,7 @@ async function runAStarVisualization(startX, startY, endX, endY, gridArray, widt
         
         // Get neighbo
         const neighbours = getNeighborsAStar(current.x, current.y, width, height, gridArray);
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
         if (shouldNarrateDecision(visitedCount)) {
             addExplanationStep(`A*: evaluating ${neighbours.length} neighbour${neighbours.length === 1 ? '' : 's'} from (${current.x}, ${current.y}).`);
         }
@@ -1372,19 +1311,18 @@ async function runAStarVisualization(startX, startY, endX, endY, gridArray, widt
         for (const neighbour of neighbours) {
             const neighbourKey = `${neighbour.x},${neighbour.y}`;
             
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+      
             if (closedSet.has(neighbourKey)) continue;
             
             const tentativeG = gScore.get(currentKey) + distanceAStar(current, neighbour);
             
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (!gScore.has(neighbourKey) || tentativeG < gScore.get(neighbourKey)) {
                 cameFrom.set(neighbourKey, currentKey);
                 gScore.set(neighbourKey, tentativeG);
                 fScore.set(neighbourKey, tentativeG + heuristicAStar(neighbour.x, neighbour.y, endX, endY));
                 
                 const inOpen = openSet.find(n => n.x === neighbour.x && n.y === neighbour.y);
-                // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
                 if (!inOpen) {
                     openSet.push({ x: neighbour.x, y: neighbour.y, f: fScore.get(neighbourKey) });
                 }
@@ -1392,10 +1330,8 @@ async function runAStarVisualization(startX, startY, endX, endY, gridArray, widt
         }
         
         // Mark as visited
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (!(current.x === startX && current.y === startY) && 
             !(current.x === endX && current.y === endY)) {
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
             if (grid[current.y] && grid[current.y][current.x] !== undefined) {
                 grid[current.y][current.x].state = 'visited';
                 grid[current.y][current.x].visitedBy = 'astar';
@@ -1413,7 +1349,6 @@ async function runAStarVisualization(startX, startY, endX, endY, gridArray, widt
     console.log('Visualisation controls re-enabled after A* search');
     updateStepModeControls();
     
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (found) {
         setExplanationStatus('Goal reached. Now tracing back through the best choices to draw the final path.');
         queueNarrationEvent('Goal reached. Now tracing back through the best choices to draw the final path.', true);
@@ -1437,12 +1372,11 @@ async function runDijkstraVisualization(startX, startY, endX, endY, gridArray, w
     
     const startKey = `${startX},${startY}`;
     const endKey = `${endX},${endY}`;
-    
-    // Loop through each item so we can update or check them one by one.
+  
     for (let y = 0; y < height; y++) {
-        // Loop through each item so we can update or check them one by one.
+
         for (let x = 0; x < width; x++) {
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+ 
             if (gridArray[y][x] !== 1) {
                 const key = `${x},${y}`;
                 distances.set(key, Infinity);
@@ -1466,16 +1400,16 @@ async function runDijkstraVisualization(startX, startY, endX, endY, gridArray, w
         
         // Loop through each item so we can update or check them one by one.
         for (const key of unvisited) {
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
             if (distances.get(key) < minDist) {
                 minDist = distances.get(key);
                 minNode = key;
             }
         }
         
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+    
         if (minNode === null || minNode === endKey) {
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+     
             if (minNode === endKey) found = true;
             break;
         }
@@ -1484,16 +1418,16 @@ async function runDijkstraVisualization(startX, startY, endX, endY, gridArray, w
         visited.add(minNode);
         
         const [currX, currY] = minNode.split(',').map(Number);
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+ 
         if (shouldNarrateDecision(visitedCount + 1)) {
             addExplanationStep(`Dijkstra: selecting (${currX}, ${currY}) with best known distance ${minDist.toFixed(1)}.`);
         }
         
         // Visualize visiting
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+   
         if (!(currX === startX && currY === startY) && 
             !(currX === endX && currY === endY)) {
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
             if (grid[currY] && grid[currY][currX] !== undefined) {
                 grid[currY][currX].state = 'visiting';
             }
@@ -1503,7 +1437,7 @@ async function runDijkstraVisualization(startX, startY, endX, endY, gridArray, w
         visitedCount++;
         
         const neighbors = getNeighborsAStar(currX, currY, width, height, gridArray);
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+     
         if (shouldNarrateDecision(visitedCount)) {
             addExplanationStep(`Dijkstra: checking ${neighbors.length} neighbour${neighbors.length === 1 ? '' : 's'} from (${currX}, ${currY}).`);
         }
@@ -1512,12 +1446,12 @@ async function runDijkstraVisualization(startX, startY, endX, endY, gridArray, w
         for (const neighbor of neighbors) {
             const neighborKey = `${neighbor.x},${neighbor.y}`;
             
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+          
             if (!unvisited.has(neighborKey)) continue;
             
             const alt = distances.get(minNode) + distanceAStar({x: currX, y: currY}, neighbor);
             
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+       
             if (alt < distances.get(neighborKey)) {
                 distances.set(neighborKey, alt);
                 previous.set(neighborKey, minNode);
@@ -1525,10 +1459,10 @@ async function runDijkstraVisualization(startX, startY, endX, endY, gridArray, w
         }
         
         // Mark as visited
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+  
         if (!(currX === startX && currY === startY) && 
             !(currX === endX && currY === endY)) {
-            // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+      
             if (grid[currY] && grid[currY][currX] !== undefined) {
                 grid[currY][currX].state = 'visited';
                 grid[currY][currX].visitedBy = 'dijkstra';
@@ -1546,7 +1480,7 @@ async function runDijkstraVisualization(startX, startY, endX, endY, gridArray, w
     console.log('Visualisation controls re-enabled after Dijkstra search');
     updateStepModeControls();
     
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+   
     if (found) {
         setExplanationStatus('Goal reached. Now tracing back through the best choices to draw the final path.');
         queueNarrationEvent('Goal reached. Now tracing back through the best choices to draw the final path.', true);
@@ -1576,12 +1510,12 @@ function getNeighborsAStar(x, y, width, height, gridArray) {
     const neighbors = [];
     const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
     
-    // Loop through each item so we can update or check them one by one.
+
     for (const [dx, dy] of directions) {
         const nx = x + dx;
         const ny = y + dy;
         
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+      
         if (nx >= 0 && nx < width && ny >= 0 && ny < height && 
             gridArray[ny][nx] !== 1) {
             neighbors.push({ x: nx, y: ny });
@@ -1605,16 +1539,13 @@ async function reconstructPathAStar(previous, endKey, startX, startY, endX, endY
     queueNarrationEvent(`Tracing back produced ${Math.max(path.length - 1, 0)} step${path.length - 1 === 1 ? '' : 's'} from start to goal.`, true);
     
     // Visualize path
-    // Loop through each item so we can update or check them one by one.
     for (let i = 1; i < path.length - 1; i++) {
         await waitForStepMode('Step mode active. Click “Next Decision” to continue tracing the final path.');
 
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (grid[path[i].y] && grid[path[i].y][path[i].x] !== undefined) {
             grid[path[i].y][path[i].x].state = 'path';
         }
 
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (i === 1 || i === path.length - 2 || i % 6 === 0) {
             addExplanationStep(`Path step ${i}: marking (${path[i].x}, ${path[i].y}) as part of the final route.`);
         }
@@ -1740,11 +1671,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Mouse down: decide mode (left = draw, right = erase)
     canvas.addEventListener('mousedown', function (e) {
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (currentTab !== 'visual') return;
         
         // Prevent interaction while algorithm is running
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (isAlgorithmRunning) return;
 
         e.preventDefault(); // no right click menu
@@ -1752,7 +1681,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const { row, col } = getCellFromEvent(e);
 
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
         if (e.button === 0 && grid[row] && grid[row][col] && grid[row][col].isStart) {
             drawMode = 'move-start';
             moveSpecialNode('start', row, col);
@@ -1777,22 +1706,19 @@ document.addEventListener('DOMContentLoaded', function () {
     // Mouse move: while mouse is down, keep drawing/erasing
     canvas.addEventListener('mousemove', function (e) {
         // Prevent interaction while algorithm is running
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
+       
         if (isAlgorithmRunning) return;
         
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (!isMouseDown || currentTab !== 'visual' || !drawMode) return;
 
         const { row, col } = getCellFromEvent(e);
 
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (drawMode === 'move-start') {
             moveSpecialNode('start', row, col);
             drawGrid();
             return;
         }
 
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (drawMode === 'move-goal') {
             moveSpecialNode('goal', row, col);
             drawGrid();
@@ -1800,7 +1726,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         
         // Draw a line from last position to current position to avoid gaps with fast movement
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (lastMouseRow !== null && lastMouseCol !== null) {
             drawLineTo(lastMouseRow, lastMouseCol, row, col, drawMode === "wall");
         } else {
@@ -1837,12 +1762,11 @@ document.addEventListener('DOMContentLoaded', function () {
 const speedSlider = document.getElementById('speed-slider');
 const speedValue = document.getElementById('speed-value');
 
-// Check if the condition is met before proceeding to avoid errors or wrong behavior.
+
 if (speedSlider && speedValue) {
     speedSlider.addEventListener('input', function() {
         const value = parseInt(this.value);
         let label = 'Normal';
-        // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (value < 20) label = 'Very Slow';
         else if (value < 40) label = 'Slow';
         else if (value < 60) label = 'Normal';
@@ -1856,7 +1780,6 @@ if (speedSlider && speedValue) {
 // Grab the current speed from the slider to figure out our loop delay
 function getAnimationDelay() {
     const speedSlider = document.getElementById('speed-slider');
-    // Check if the condition is met before proceeding to avoid errors or wrong behavior.
     if (!speedSlider) return 50; // default
     
     const value = parseInt(speedSlider.value);
