@@ -171,25 +171,32 @@ function formatPdfDate(isoDate) {
 
 // Load PDFs from backend
 async function loadPdfs() {
+    console.log('loadPdfs: Starting PDF load');
     const pdfList = document.getElementById('pdf-list');
     // Check if the condition is met before proceeding to avoid errors or wrong behavior.
-    if (!pdfList) return;
+    if (!pdfList) {
+        console.error('loadPdfs: pdf-list element not found');
+        return;
+    }
 
     pdfList.innerHTML = '<p class="pdf-empty">Loading PDF resources...</p>';
 
     try {
+        console.log('loadPdfs: Fetching /api/resources/pdfs');
         const res = await fetch('/api/resources/pdfs');
         // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (!res.ok) {
             const errorText = await res.text();
-            console.warn('PDF API returned non-success response:', res.status, errorText);
-            renderFallbackPdfList(pdfList, `HTTP ${res.status}`);
+            console.error('loadPdfs: API error', res.status, errorText);
+            pdfList.innerHTML = `<div class="pdf-empty-wrap"><p class="pdf-empty">Error loading PDFs (HTTP ${res.status})</p></div>`;
             return;
         }
 
         const pdfs = await res.json();
+        console.log('loadPdfs: Received PDFs:', pdfs);
         // Check if the condition is met before proceeding to avoid errors or wrong behavior.
         if (!Array.isArray(pdfs) || pdfs.length === 0) {
+            console.log('loadPdfs: No PDFs found');
             pdfList.innerHTML = `
                 <div class="pdf-empty-wrap">
                     <p class="pdf-empty">No PDF files found yet.</p>
@@ -199,6 +206,7 @@ async function loadPdfs() {
             return;
         }
 
+        console.log('loadPdfs: Rendering', pdfs.length, 'PDFs');
         const cardsHtml = pdfs.map(pdf => {
             const title = pdf.title || pdf.fileName || 'Untitled PDF';
             const url = pdf.url || '#';
@@ -219,9 +227,10 @@ async function loadPdfs() {
         }).join('');
 
         pdfList.innerHTML = cardsHtml;
+        console.log('loadPdfs: Complete');
     } catch (e) {
-        console.error('Failed to load PDFs:', e);
-        renderFallbackPdfList(pdfList, e && e.message ? e.message : 'Unknown error');
+        console.error('loadPdfs: Exception', e);
+        pdfList.innerHTML = `<div class="pdf-empty-wrap"><p class="pdf-empty">Error: ${e.message}</p></div>`;
     }
 }
 
