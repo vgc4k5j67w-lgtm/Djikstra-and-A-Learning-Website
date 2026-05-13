@@ -251,6 +251,46 @@ public static class SeedData
                      new Choice { Text = "Social network analysis", IsCorrect = false, Explanation = "Shortest path algorithms can analyze connections and influence in social networks." },
                      new Choice { Text = "Image compression", IsCorrect = true, Explanation = "Image compression typically relies on different techniques like transform coding, not shortest path algorithms." }
                  }
+             },
+             new()
+             {
+                 Type = QuestionType.MultipleChoice,
+                 Text = "Which of the following statements about Djikstra's algorithm is true?",
+                 Points = 1, 
+                    Choices = new[]
+                    {
+                        new Choice { Text = "Dijkstra's algorithm can only be used on unweighted graphs.", IsCorrect = false, Explanation = "Dijkstra's algorithm is designed for weighted graphs." },
+                        new Choice { Text = "Dijkstra's algorithm guarantees the shortest path regardless of the graph.", IsCorrect = true, Explanation = "Dijkstra's algorithm will always find the shortest path as long as there are no negative weight edges." },
+                        new Choice { Text = "Dijkstra's algorithm is more efficient than A* in all cases.", IsCorrect = false, Explanation = "A* can be more efficient than Dijkstra's when a good heuristic is used." },
+                        new Choice { Text = "Dijkstra's algorithm does not use a priority queue.", IsCorrect = false, Explanation = "Dijkstra's algorithm typically uses a priority queue to manage nodes based on their current shortest distance." }
+                    }
+             },
+             new()
+             {
+                 Type = QuestionType.MultipleChoice,
+                 Text = "What is the primary reason that Dijkstra's algorithm may perform poorly on large graphs compared to A*?",
+                 Points = 1,
+                Choices = new[]
+                {
+                    new Choice { Text = "Dijkstra's algorithm does not use a heuristic to guide the search, leading to more nodes being explored.", IsCorrect = true, Explanation = "Without a heuristic, Dijkstra's algorithm explores all possible paths equally, which can be inefficient on large graphs." },
+                    new Choice { Text = "Dijkstra's algorithm is designed for unweighted graphs, making it less efficient on weighted graphs.", IsCorrect = false, Explanation = "Dijkstra's algorithm is specifically designed for weighted graphs." },
+                    new Choice { Text = "Dijkstra's algorithm uses more memory than A* due to its data structures.", IsCorrect = false, Explanation = "While Dijkstra's can use more memory in some cases, the primary reason for poor performance is the lack of a heuristic." },
+                    new Choice { Text = "Dijkstra's algorithm is not guaranteed to find the shortest path on large graphs.", IsCorrect = false, Explanation = "Dijkstra's algorithm will always find the shortest path as long as there are no negative weight edges." }
+                }
+
+             },
+             new()
+             {
+                 Type = QuestionType.LongAnswer,
+                 Text = "What is a heuristic in the context of pathfinding algorithms, and how does it influence the performance of the A* algorithm?",
+                 Points = 3,
+                 ModelAnswer = "A heuristic is an estimate of the cost to reach the goal from a given node. In A*, the heuristic helps prioritize which nodes to explore next. A good heuristic can significantly reduce the number of nodes A* needs to evaluate, improving performance. However, if the heuristic is poor (e.g., overestimates the cost), it can lead to inefficient searches and may even cause A* to fail to find the optimal path.",
+                 Hints = new[]
+                 {
+                        new Hint { Text = "Define what a heuristic is in simple terms.", Order = 1 },
+                        new Hint { Text = "Explain how A* uses the heuristic to decide which node to explore next.", Order = 2 },
+                        new Hint { Text = "Discuss the impact of a good vs. poor heuristic on A*'s performance.", Order = 3 }
+                 }
              }
         };
     }

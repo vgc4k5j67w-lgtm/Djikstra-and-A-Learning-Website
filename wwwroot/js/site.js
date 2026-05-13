@@ -1583,7 +1583,8 @@ function sleep(ms) {
 // Just trigger the randomizer function and lock it in
 function randomWalls() {
     
-    if (!grid || grid.length === 0) initGrid();
+    if (!grid || grid.length === 0) initGrid();    
+    resetTraversalStats();
     const slider = document.getElementById('density-slider');
     const density = slider ? parseFloat(slider.value) : 0.3;
     RandomizeGrid(density);
